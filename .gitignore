@@ -1,0 +1,6 @@
+# Dados e arquivos temporários
+/data/
+*.log
+*.tmp
+__pycache__/
+.env
