@@ -85,9 +85,66 @@
    ```
    Abra http://localhost:9000 (use credenciais do ConfigMap).
 
+## Etapa 3: Pipeline de Ingestão (Camada Bronze)
+
+### O que foi implementado
+- **Script PySpark**: `pipelines/bronze_ingestion.py` - Extrai dados de API (ex: JSONPlaceholder) e salva no MinIO.
+- **DAG Airflow**: `dags/bronze_ingestion_dag.py` - Orquestra a execução diária.
+- **Script de teste**: `pipelines/test_bronze_ingestion.sh` - Para testar localmente.
+
+### Boas práticas aplicadas (Airflow 2.x)
+- **TaskFlow API**: Uso de `@task` decorators para código mais limpo e legível
+- **Dag Decorator**: DAG definida como função decorada com `@dag`
+- **Tipagem e validação**: Validação de dados entre tarefas
+- **XCom automático**: Passagem de dados entre tarefas via return
+- **Tags**: Organização com tags ['bronze', 'ingestion', 'catfacts', 'api']
+- **Execution timeout**: Timeout de 1 hora para evitar execuções infinitas
+- **Retries aumentado**: 3 tentativas com delay de 5 minutos
+- **Schedule moderno**: Uso de '@daily' ao invés de timedelta
+- **Docstrings**: Documentação completa das funções e DAG
+
+### Como executar
+1. **Via Airflow (produção)**:
+   - Copie o DAG para o pod do Airflow:
+     ```bash
+     kubectl cp dags/catfacts_bronze_ingestion_dag.py data-lake/airflow-webserver-xxx:/opt/airflow/dags/
+     ```
+   - Acesse Airflow UI e ative o DAG `catfacts_bronze_ingestion_dag`.
+
+2. **Teste local (desenvolvimento)**:
+   - Configure MinIO local (porta-forward):
+     ```bash
+     kubectl port-forward svc/minio-service 9000:9000 -n data-lake
+     ```
+   - Execute: `./pipelines/test_bronze_ingestion.sh`
+
+### Como validar
+1. Verifique logs no Airflow ou console.
+2. Acesse MinIO UI (porta 9000) e confira o bucket `bronze-landing` com arquivo `catfacts_batch_YYYY-MM-DD.json`.
+3. Conteúdo do arquivo deve ter dados JSON com campos como `fact`, `length`, etc., mais `ingestion_timestamp`.
+
+### Observabilidade implementada
+- **Logs por hora**: Cada tarefa imprime timestamp e status com emojis
+- **Métricas**: Contagem de registros processados
+- **Validação**: Verificação de campos obrigatórios
+- **Estatísticas**: Distribuição por categoria na Silver
+
+### Exemplo de output esperado
+```
+[2025-09-02 14:30:15] 🚀 Iniciando extração de dados da API CatFacts...
+[2025-09-02 14:30:16] ✅ Extraídos 10 fatos sobre gatos da API
+[2025-09-02 14:30:17] 🔍 Iniciando validação dos dados...
+[2025-09-02 14:30:17] ✅ Dados validados: 10 registros com campos obrigatórios
+[2025-09-02 14:30:18] 💾 Iniciando salvamento na camada Bronze...
+[2025-09-02 14:30:20] ✅ Dados salvos em: s3a://bronze-landing/catfacts_batch_2025-09-02.json
+[2025-09-02 14:30:20] 📊 Total processado: 10 fatos sobre gatos
+```
+
 ### Próximos passos
-- Criar pipeline de ingestão (camada Bronze).
-- Adicionar volumes persistentes reais (PVCs) para produção.
+- Executar DAGs no Airflow
+- Criar pipeline de transformação Silver (já implementado em `dags/catfacts_silver_transformation_dag.py`)
+- Adicionar testes automatizados
+- Implementar observabilidade (logs, métricas, alertas)
 
 ---
-> Revisar e aprovar antes de prosseguir para Etapa 3.
+> DAGs seguem as melhores práticas do Airflow 2.x: TaskFlow API, validação de dados, tipagem e documentação completa.
