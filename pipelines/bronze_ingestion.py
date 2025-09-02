@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Configurações via variáveis de ambiente (para produção, use Secrets)
-API_URL = os.getenv('API_URL', 'https://jsonplaceholder.typicode.com/users')
+API_URL = os.getenv('API_URL', 'https://catfact.ninja/facts?limit=10')
 MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'http://minio-service.data-lake.svc.cluster.local:9000')
 MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', 'datalakeuser')
 MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY', 'datalakepassword')
@@ -37,9 +37,9 @@ def extract_from_api(url: str) -> list:
         logger.info(f"Extraindo dados da API: {url}")
         response = requests.get(url, timeout=30)
         response.raise_for_status()
-        data = response.json()
-        logger.info(f"Dados extraídos: {len(data)} registros")
-        return data
+        # Normalizar dados da API
+        if isinstance(data, dict) and 'data' in data:
+            data = data['data']  # Para APIs como catfacts
     except requests.RequestException as e:
         logger.error(f"Erro ao extrair da API: {e}")
         raise
