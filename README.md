@@ -3,20 +3,41 @@
 
 > Estrutura inicial do projeto para ingestão, processamento e disponibilização de dados em ambiente Kubernetes, com Spark, MinIO, Airflow e GitOps.
 
-## Estrutura de diretórios
+## 📁 Estrutura Organizada
+
 ```
-.
-├── README.md
-├── infra/           # Infraestrutura (K8s, MinIO, Airflow, configs)
-├── pipelines/       # Pipelines ETL/ELT (Spark, scripts)
-├── dags/            # DAGs do Airflow
-├── data/            # Dados brutos e processados (Bronze/Silver/Gold)
+mudar-depois/
+├── src/                          # Código fonte
+│   ├── core/                     # Scripts principais
+│   │   └── bronze_ingestion.py   # Pipeline Bronze
+│   ├── pipelines/                # Scripts de processamento
+│   │   ├── test_bronze_ingestion.sh
+│   │   ├── test_local_ingestion.py
+│   │   └── test_silver_transformation.sh
+│   └── dags/                     # DAGs do Airflow
+│       ├── bronze_ingestion_dag.py
+│       └── catfacts_silver_transformation_dag.py
+├── config/                       # Configurações
+│   ├── .env.example              # Exemplo de variáveis
+│   ├── requirements.txt          # Dependências Python
+│   └── infra/                    # Configurações K8s
+│       ├── namespace.yaml
+│       ├── minio-deployment.yaml
+│       ├── airflow-deployment.yaml
+│       ├── secrets.yaml
+│       └── deploy.sh
+├── data/                         # Dados (Bronze/Silver/Gold)
 │   ├── bronze/
 │   ├── silver/
 │   └── gold/
-├── tests/           # Testes automatizados
-├── docs/            # Documentação adicional
-└── .gitignore
+├── scripts/                      # Scripts utilitários
+│   └── check_dependencies.sh
+├── docs/                         # Documentação
+│   └── INSTALL.md
+├── tests/                        # Testes
+├── .gitignore
+├── README.md
+└── .venv/                        # Ambiente virtual (opcional)
 ```
 
 ## Descrição das pastas
@@ -148,3 +169,41 @@
 
 ---
 > DAGs seguem as melhores práticas do Airflow 2.x: TaskFlow API, validação de dados, tipagem e documentação completa.
+
+## 📋 Dependências Verificadas ✅
+
+### Sistema
+- ✅ **Python 3.12.3** - Linguagem principal
+- ✅ **OpenJDK 11** - Necessário para PySpark
+- ✅ **pip 24.0** - Gerenciador de pacotes
+- ✅ **Docker** - Para serviços locais (MinIO, etc.)
+- ✅ **kubectl** - Para Kubernetes (opcional)
+
+### Python Packages
+- ✅ **requests** - Para chamadas de API
+- ✅ **boto3** - Para integração com MinIO/S3
+- ✅ **pyspark** - Para processamento distribuído
+
+### Arquivos de Configuração
+- 📄 `config/requirements.txt` - Lista completa de dependências
+- 📄 `docs/INSTALL.md` - Guia detalhado de instalação
+- 📄 `config/.env.example` - Exemplo de variáveis de ambiente
+- 🛠️ `scripts/check_dependencies.sh` - Script de verificação automática
+
+### Como Usar
+1. **Copie o arquivo de configuração:**
+   ```bash
+   cp config/.env.example .env
+   ```
+
+2. **Configure as variáveis no `.env`** conforme seu ambiente
+
+3. **Execute a verificação:**
+   ```bash
+   ./scripts/check_dependencies.sh
+   ```
+
+### Próximos Passos
+- Configurar MinIO local ou cluster Kubernetes
+- Executar pipelines de teste
+- Desenvolver camadas Silver e Gold

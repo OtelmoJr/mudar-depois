@@ -1,0 +1,24 @@
+# Python Dependencies
+requests>=2.28.0
+boto3>=1.28.0
+pyspark>=3.4.0
+apache-airflow>=2.7.0
+apache-airflow-providers-amazon>=8.0.0  # Para integração S3/MinIO
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Logging and monitoring
+structlog>=23.0.0
+
+# Kubernetes (opcional, para desenvolvimento local)
+kubernetes>=26.0.0
+
+# Web framework (se precisar de APIs)
+fastapi>=0.100.0
+uvicorn>=0.23.0
